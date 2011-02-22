@@ -1,0 +1,18 @@
+0.06
+  - new scheduling algorithm
+
+0.05
+  - moved library functions into Yandex::Tools
+
+0.04
+  - correct dependency (Schedule::Cron::Events)
+
+0.03
+  - using snaked namespace for module functions
+
+0.02
+  - added documentation
+
+0.01
+  - first release to CPAN
+
