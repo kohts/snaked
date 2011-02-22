@@ -1,0 +1,9 @@
+snaked is a cron replacement which implements
+several features that people always wanted
+to have in regular cron and haven't ever got,
+before snaked.
+
+for the list of the implemented features see:
+http://search.cpan.org/~kohts/snaked/lib/snaked.pm
+
+for the list of the planned features see TODO.
