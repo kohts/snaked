@@ -1,3 +1,18 @@
+0.11
+  - more accurate timing (using MONOTONIC clock where possible,
+    thanks to tejblum@yandex-team.ru); using "sleep 1" on FreeBSD
+    as Time::HiRes::usleep(1_000_000) block sometimes for several hours :(
+
+  - --detailed-status (similar to that which innodb makes)
+
+  - command-line configuration manipulation (by andozer@yandex-team.ru)
+
+  - eliminated memory leak while rereading configuration
+    (which lead to extensive daemon memory usage over time)
+
+  - lots of small improvements
+
+
 0.06
   - new scheduling algorithm
 
