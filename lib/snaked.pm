@@ -630,7 +630,7 @@ Petya Kohts E<lt>petya@kohts.ruE<gt>
 
 =head1 COPYRIGHT
 
-Copyright 2009 - 2010 Petya Kohts.
+Copyright 2009 - 2011 Petya Kohts.
 
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.
