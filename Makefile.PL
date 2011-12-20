@@ -4,9 +4,9 @@ use ExtUtils::MakeMaker;
 
 my $prereqs = {
   'Cwd'  => 0,
+  'Set::Crontab'  => 0,
   'Storable'  => 0,
   'Time::HiRes'  => 0,
-  'Schedule::Cron::Events'  => 0,
   'Time::Local'  => 0,
   'Yandex::Tools' => 0,
   };
