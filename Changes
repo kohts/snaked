@@ -1,3 +1,7 @@
+0.13
+  - got permissions for Schedule::Cron::Events from PKent,
+    removed module from snaked distribution.
+
 0.12
   - fixed unresolved dependency: moved Schedule::Cron::Events
     into snaked distribution (it was deleted from CPAN, thanks).

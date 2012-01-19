@@ -1,7 +1,7 @@
 package snaked;
 
 use vars qw($VERSION);
-$VERSION = '0.12';
+$VERSION = '0.13';
 
 use strict;
 use warnings;
@@ -630,7 +630,7 @@ Petya Kohts E<lt>petya@kohts.ruE<gt>
 
 =head1 COPYRIGHT
 
-Copyright 2009 - 2011 Petya Kohts.
+Copyright 2009 - 2012 Petya Kohts.
 
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.
