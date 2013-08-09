@@ -1,7 +1,7 @@
 package snaked;
 
 use vars qw($VERSION);
-$VERSION = '0.13';
+$VERSION = '0.14';
 
 use strict;
 use warnings;
@@ -376,14 +376,17 @@ snaked - cron as it should be.
   # import old cron jobs (TO BE IMPLEMENTED)
   snaked --import-crontabs
 
+  # generate sample configuration in /etc/snaked (the one described below)
+  snaked --sample-config
+
   # check which jobs are configured
-  snaked --show-jobs
+  snaked --show-config
 
-  # rock with snake
+  # run in the foreground (CTRL-C to exit)
+  snaked --debug
+
+  # run in the background
   snaked --daemon
-
-  # (and do not forget to stop old cron
-  # so your jobs are not run twice)
 
 =head1 DESCRIPTION
 
@@ -539,6 +542,13 @@ Optional. Filename of the pidfile where snaked stores
 the pid of its main process. Defaults to nothing,
 which does not generate any pidfile.
 
+=item spool_directory
+
+Optional. Directory which is used to write detailed status
+and debugging information (if configured).
+
+Defaults to /tmp/snaked.spool__etc_snaked
+
 =back
 
 =head1 JOB OPTIONS
@@ -547,13 +557,18 @@ which does not generate any pidfile.
 
 =item admin_email
 
-Optional. Where toe send emails about failures of this job.
+Optional. Where to send emails about failures of this job.
 Defaults to global admin_email option (and overrides it). 
 
 =item cmd
 
 Mandatory. Executable with correct file permissions (executable bit on)
 which is allowed by underlying operating system. Can be shell script or binary.
+
+=item disabled
+
+Optional. Existing file specifies that this job should not be run
+(see also --enable-jobs and --disable-jobs command line parameters)
 
 =item execution_interval, execution_schedule
 
@@ -605,6 +620,87 @@ waiting for the conflicting jobs.
 
 =back
 
+=head1 DAEMON COMMAND-LINE PARAMETERS
+
+=over 4
+
+=item --daemon or --debug [--cfg PATH]
+
+Two main (and mutually exclusive) command-line parameter are
+--daemon (run in background) and --debug (run in the foreground). 
+
+--cfg option specifies which snaked configuration which is to be used
+for this snaked copy (defaults to /etc/snaked)
+
+You can run several independent daemons with different configurations.
+
+=item --stop [--cfg PATH] [--wait]
+
+Request snaked to be stopped. With --wait option this request
+will not return until snaked is actually stopped.
+
+=item --configure [--cfg PATH]
+
+Request snaked to reread configuration.
+
+=item --restart [--cfg PATH]
+
+Request snaked to restart. With --wait option this request
+will not return until snaked is actually restarted.
+
+=item --status [--cfg PATH]
+
+Check whether snaked runs.
+
+=item --detailed-status [--cfg PATH]
+
+Dumps detailed state information into spool_directory.
+
+=item --version
+
+Show snaked version.
+
+=item --show-config [--cfg PATH]
+
+Dumps the configuration.
+
+=item --enable-jobs <JOB_LIST> [--cfg PATH]
+
+For every job in JOB_LIST (space separated) remove special
+'disabled' file from job directory and request snaked to reread
+configuration.
+
+=item --disable-jobs <JOB_LIST> [--cfg PATH]
+
+For every job in JOB_LIST (space separated) add special
+'disabled' file tojob directory and request snaked to reread
+configuration.
+
+=item --add-job <JOB_NAME> --execution_interval N --cmd BASH_TEXT [--cfg PATH]
+
+Add job named JOB_NAME to the snaked configuration pointed to by PATH
+(defaults to /etc/snaked). execution_interval is set to N, cmd is set
+to BASH_TEXT (protect shell special characters with quotes).
+
+Other job parameters can be specified.
+
+=item --delete-jobs <JOB_LIST> [--cfg PATH]
+
+Delete jobs from snaked configuration pointed to by PATH (defaults
+to /etc/snaked). This command does actually removes whole job directory,
+consider using --disable-jobs <JOB_LIST> as it is safer.
+
+=item --modify-job <JOB_NAME> <--parameter> <value> [--cfg PATH]
+
+Replaces current value of parameter of the specified job with new value
+in the snaked configuration pointed to by PATH (defaults to /etc/snaked)
+
+=item --sample-config [PATH]
+
+Populate PATH or /etc/snaked with sample configuration (must not exist)
+
+=back
+
 =head1 CREDITS
 
 Thanks to the whole Yandex team and personally to the following people (in alphabetic order):
@@ -626,11 +722,11 @@ for their bug reports, suggestions and contributions.
 
 =head1 AUTHORS
 
-Petya Kohts E<lt>petya@kohts.ruE<gt>
+Petya Kohts E<lt>petya@kohts.comE<gt>
 
 =head1 COPYRIGHT
 
-Copyright 2009 - 2012 Petya Kohts.
+Copyright 2009 - 2013 Petya Kohts.
 
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.

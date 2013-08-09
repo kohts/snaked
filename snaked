@@ -51,8 +51,9 @@ use IO::Handle; # autoflush
 use Socket; # socketpair
 use Fcntl;
 use Time::HiRes;
+use File::Path;
 
-my $version = '($Id: snaked 5492 2011-08-02 04:45:53Z kohts $)';
+my $version = $snaked::VERSION;
 
 my ($daemon_regexp_configured, $daemon_match_cfg, $daemon_match_cfg1, $daemon_match_nocfg, $watchdog_match, $watchdog_match1);
 
@@ -318,8 +319,7 @@ sub debug_main_cycle {
 
 sub help() {
   print '
-    snaked -- cron as it should be
-    ' . $version . '
+    snaked -- cron as it should be (version ' . $version . ')
 
     command-line options:
       
@@ -344,7 +344,7 @@ sub help() {
         --disable-jobs [JOBS]          -- disable all (or listed) jobs
         --enable-jobs [JOBS]           -- enable all (or listed) jobs
 
-        --show-jobs                    -- show configured daemon jobs
+        --show-config                  -- show configured daemon jobs
         --show-job JOB [--param]       -- shows either all parameters of the job
                                           or those specified by the --param
                                           (space separated)
@@ -1192,7 +1192,35 @@ Yandex::Tools::ProcessList::set_options({
 # finding configuration on the disk -- what they need
 # is the PID which they get from the process table
 #
-if (Yandex::Tools::defined_cmdline_param('stop')) {
+if (Yandex::Tools::defined_cmdline_param('sample-config')) {
+    my $target_dir = Yandex::Tools::get_cmdline_param('sample-config') || "/etc/snaked";
+    if (-e $target_dir) {
+        Yandex::Tools::die("Directory [$target_dir] exists, not going to overwrite.", {'no_log' => 1});
+    }
+    File::Path::mkpath($target_dir);
+    Yandex::Tools::write_file_scalar($target_dir . "/log", "/var/log/snaked.log\n");
+    Yandex::Tools::write_file_scalar($target_dir . "/admin_email", "root\n");
+
+    File::Path::mkpath($target_dir . "/jobs/every_hour");
+    Yandex::Tools::write_file_scalar($target_dir . "/jobs/every_hour/execution_schedule", "0 * * * *\n");
+    Yandex::Tools::write_file_scalar($target_dir . "/jobs/every_hour/cmd", "uptime >> /tmp/snaked_every_hour\n");
+    chmod(755, $target_dir . "/jobs/every_hour/cmd") || Yandex::Tools::die("Unable to set permissions on [" . $target_dir . "/jobs/every_hour/cmd" . "]", {'no_log' => 1});
+
+    File::Path::mkpath($target_dir . "/jobs/every_ten_seconds");
+    Yandex::Tools::write_file_scalar($target_dir . "/jobs/every_ten_seconds/execution_interval", "10\n");
+    Yandex::Tools::write_file_scalar($target_dir . "/jobs/every_ten_seconds/cmd", "uptime >> /tmp/snaked_every_ten_seconds\nsleep 2\n");
+    chmod(755, $target_dir . "/jobs/every_ten_seconds/cmd") || Yandex::Tools::die("Unable to set permissions on [" . $target_dir . "/jobs/every_ten_seconds/cmd" . "]", {'no_log' => 1});
+
+    File::Path::mkpath($target_dir . "/jobs/fast_job");
+    Yandex::Tools::write_file_scalar($target_dir . "/jobs/fast_job/execution_interval", "1\n");
+    Yandex::Tools::write_file_scalar($target_dir . "/jobs/fast_job/cmd", "uptime >> /tmp/snaked_fast_job\n");
+    Yandex::Tools::write_file_scalar($target_dir . "/jobs/fast_job/conflicts", "every_ten_seconds\n");
+    chmod(755, $target_dir . "/jobs/fast_job/cmd") || Yandex::Tools::die("Unable to set permissions on [" . $target_dir . "/jobs/fast_job/cmd" . "]", {'no_log' => 1});
+
+    print "written sample configuration to: $target_dir\n";
+    exit(0);
+}
+elsif (Yandex::Tools::defined_cmdline_param('stop')) {
   my $d = Yandex::Tools::ProcessList::get_other_daemon_process();
   if ($d) {
     print "requesting " . $d->pid() . " [" . $d->cmndline . "] to stop\n";
@@ -1321,6 +1349,7 @@ if (
   !Yandex::Tools::defined_cmdline_param('debug') &&
   !$i_am_watchdog &&
   !Yandex::Tools::defined_cmdline_param('show-jobs') &&
+  !Yandex::Tools::defined_cmdline_param('show-config') &&
   !Yandex::Tools::defined_cmdline_param('show-job') &&
   !Yandex::Tools::defined_cmdline_param('enable-jobs') &&
   !Yandex::Tools::defined_cmdline_param('disable-jobs') &&
@@ -1341,7 +1370,7 @@ if (!get_cfg_path()) {
 }
 snaked::refreshOptions($ENV{'PS_SNAKED_CFG'}, {'no-jobs' => $i_am_watchdog});
 
-if (Yandex::Tools::defined_cmdline_param('show-jobs')) {
+if (Yandex::Tools::defined_cmdline_param('show-config') || Yandex::Tools::defined_cmdline_param('show-jobs')) {
   print "    global options\n";
   foreach my $k (sort keys %{$snaked::Daemon::runtime->{'config'}}) {
     print "      $k: " . $snaked::Daemon::runtime->{'config'}->{$k}->{'value'} . "\n";
@@ -1459,17 +1488,22 @@ elsif (Yandex::Tools::defined_cmdline_param('add-job')) {
   my $param_values = {};
 
   my $mandatory_params = {
-    'admin_email' => 1,
     'cmd' => 1,
-    'execution_interval' => 1,
-    'execution_timeout' => 1,
-    'notification_interval' => 1,
     };
   my $optional_params = {
+    'execution_interval' => 1,
+    'notification_interval' => 1,
+    'execution_timeout' => 1,
+    'admin_email' => 1,
     'conflicts' => 1,
     };
 
   my @err = ();
+
+  if (!Yandex::Tools::defined_cmdline_param('execution_interval') &&
+    !Yandex::Tools::defined_cmdline_param('execution_schedule')) {
+    push(@err, "either [execution_interval] or [execution_schedule] must be specified");
+  }
 
   foreach my $k (keys %{$mandatory_params}) {
     unless (Yandex::Tools::defined_cmdline_param($k)) {

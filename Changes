@@ -1,3 +1,6 @@
+0.14
+  YAPC Europe 2013 release: --sample-config and documentation updated
+
 0.13
   - got permissions for Schedule::Cron::Events from PKent,
     removed module from snaked distribution.
