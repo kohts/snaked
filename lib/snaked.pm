@@ -435,6 +435,15 @@ and snaked job schedule format which specifies how often
 the jobs is run in seconds, making it possible to run job
 even once a second!
 
+=head2 run from any user, root is not required
+
+Although configuration example below shows snaked run from root,
+this is not a requirement. snaked doesn't require any specific
+super-user privileges. Just specify configuration path
+(with --cfg parameter) accessible by snaked (that's why
+default log path for example points to /tmp) and run it
+from any user.
+
 =head1 CONFIGURATION EXAMPLE
 
 snaked configuration is a directory which contains
@@ -631,7 +640,7 @@ waiting for the conflicting jobs.
 Two main (and mutually exclusive) command-line parameters are
 --daemon (run in background) and --debug (run in foreground). 
 
---cfg option specifies which snaked configuration which is to be used
+--cfg option specifies snaked configuration which is to be used
 for this snaked copy (defaults to /etc/snaked)
 
 You can run several independent daemons with different configurations.
@@ -653,6 +662,12 @@ will not return until snaked is actually restarted.
 =item --status [--cfg PATH]
 
 Check whether snaked runs.
+
+This is done by traversing all the running processes
+and finding those which name matches snaked --cfg PATH.
+
+IF --cfg parameter is not specified then
+PATH defaults to /etc/snaked
 
 =item --detailed-status [--cfg PATH]
 

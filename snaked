@@ -1198,24 +1198,31 @@ if (Yandex::Tools::defined_cmdline_param('sample-config')) {
         Yandex::Tools::die("Directory [$target_dir] exists, not going to overwrite.", {'no_log' => 1});
     }
     File::Path::mkpath($target_dir);
-    Yandex::Tools::write_file_scalar($target_dir . "/log", "/var/log/snaked.log\n");
-    Yandex::Tools::write_file_scalar($target_dir . "/admin_email", "root\n");
+    
+    if ($> eq 0) {
+        Yandex::Tools::write_file_scalar($target_dir . "/log", "/var/log/snaked.log\n");
+        Yandex::Tools::write_file_scalar($target_dir . "/admin_email", "root\n");
+    }
+    else {
+        Yandex::Tools::write_file_scalar($target_dir . "/log", "/tmp/snaked.log\n");
+        Yandex::Tools::write_file_scalar($target_dir . "/admin_email", getpwuid($>) . "\n");
+    }
 
     File::Path::mkpath($target_dir . "/jobs/every_hour");
     Yandex::Tools::write_file_scalar($target_dir . "/jobs/every_hour/execution_schedule", "0 * * * *\n");
     Yandex::Tools::write_file_scalar($target_dir . "/jobs/every_hour/cmd", "uptime >> /tmp/snaked_every_hour\n");
-    chmod(755, $target_dir . "/jobs/every_hour/cmd") || Yandex::Tools::die("Unable to set permissions on [" . $target_dir . "/jobs/every_hour/cmd" . "]", {'no_log' => 1});
+    chmod(0755, $target_dir . "/jobs/every_hour/cmd") || Yandex::Tools::die("Unable to set permissions on [" . $target_dir . "/jobs/every_hour/cmd" . "]", {'no_log' => 1});
 
     File::Path::mkpath($target_dir . "/jobs/every_ten_seconds");
     Yandex::Tools::write_file_scalar($target_dir . "/jobs/every_ten_seconds/execution_interval", "10\n");
     Yandex::Tools::write_file_scalar($target_dir . "/jobs/every_ten_seconds/cmd", "uptime >> /tmp/snaked_every_ten_seconds\nsleep 2\n");
-    chmod(755, $target_dir . "/jobs/every_ten_seconds/cmd") || Yandex::Tools::die("Unable to set permissions on [" . $target_dir . "/jobs/every_ten_seconds/cmd" . "]", {'no_log' => 1});
+    chmod(0755, $target_dir . "/jobs/every_ten_seconds/cmd") || Yandex::Tools::die("Unable to set permissions on [" . $target_dir . "/jobs/every_ten_seconds/cmd" . "]", {'no_log' => 1});
 
     File::Path::mkpath($target_dir . "/jobs/fast_job");
     Yandex::Tools::write_file_scalar($target_dir . "/jobs/fast_job/execution_interval", "1\n");
     Yandex::Tools::write_file_scalar($target_dir . "/jobs/fast_job/cmd", "uptime >> /tmp/snaked_fast_job\n");
     Yandex::Tools::write_file_scalar($target_dir . "/jobs/fast_job/conflicts", "every_ten_seconds\n");
-    chmod(755, $target_dir . "/jobs/fast_job/cmd") || Yandex::Tools::die("Unable to set permissions on [" . $target_dir . "/jobs/fast_job/cmd" . "]", {'no_log' => 1});
+    chmod(0755, $target_dir . "/jobs/fast_job/cmd") || Yandex::Tools::die("Unable to set permissions on [" . $target_dir . "/jobs/fast_job/cmd" . "]", {'no_log' => 1});
 
     print "written sample configuration to: $target_dir\n";
     exit(0);
