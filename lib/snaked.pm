@@ -665,9 +665,8 @@ Check whether snaked runs.
 
 This is done by traversing all the running processes
 and finding those which name matches snaked --cfg PATH.
-
-IF --cfg parameter is not specified then
-PATH defaults to /etc/snaked
+If --cfg parameter is not specified then PATH
+defaults to /etc/snaked
 
 =item --detailed-status [--cfg PATH]
 
