@@ -376,7 +376,7 @@ snaked - cron as it should be.
   # import old cron jobs (TO BE IMPLEMENTED)
   snaked --import-crontabs
 
-  # generate sample configuration in /etc/snaked (the one described below)
+  # generate sample configuration (discussed below) in /etc/snaked
   snaked --sample-config
 
   # check which jobs are configured
@@ -458,8 +458,8 @@ stored in a separate file:
   |       `-- execution_interval
   `-- log
 
-Above shown configuration defines admin_email
-for the snaked instance (optional, defaults to root)
+Above shown configuration (run "snaked --sample-config" from root to get it)
+defines admin_email for the snaked instance (optional, defaults to root)
 and log file path (optional, defaults to /tmp/snaked.log):
 
   testing18:/etc/snaked# cat admin_email
@@ -467,10 +467,12 @@ and log file path (optional, defaults to /tmp/snaked.log):
   testing18:/etc/snaked# cat log
   /var/log/snaked/snaked.log
 
-There are three jobs named every_hour, every_ten_seconds
-and fast_job. All of them contain cmd file -- an executable
-which is run by snaked (this can be any executable
-allowed by underlying operating system):
+There are three jobs named every_hour, every_ten_seconds and fast_job
+which append the result of 'uptime' command to /tmp/snaked_every_hour,
+/tmp/snaked_ten_seconds and /tmp/snaked_fast_job. This is done by
+running 'cmd' file which resides in job directory -- shell script
+in sample configuration, this can be any executable allowed
+by underlying operating system:
 
   testing18:/etc/snaked/jobs/every_hour# ls -l cmd
   -rwxr-xr-x 1 root root 0 2010-07-07 00:24 cmd
@@ -605,8 +607,8 @@ which turns the feature off.
 =item conflicts
 
 Optional. Space/line separated list of job identifiers
-which should not be run while this job is run. If any
-job from this list is currently being executed
+which should wait while this job is running. If any job
+from this list is currently being executed
 then the job owning the option will not be executed.
 Defaults to nothing, allowing the job to be run
 independently of the status of any other job.
@@ -626,8 +628,8 @@ waiting for the conflicting jobs.
 
 =item --daemon or --debug [--cfg PATH]
 
-Two main (and mutually exclusive) command-line parameter are
---daemon (run in background) and --debug (run in the foreground). 
+Two main (and mutually exclusive) command-line parameters are
+--daemon (run in background) and --debug (run in foreground). 
 
 --cfg option specifies which snaked configuration which is to be used
 for this snaked copy (defaults to /etc/snaked)
@@ -682,7 +684,7 @@ Add job named JOB_NAME to the snaked configuration pointed to by PATH
 (defaults to /etc/snaked). execution_interval is set to N, cmd is set
 to BASH_TEXT (protect shell special characters with quotes).
 
-Other job parameters can be specified.
+Other job parameters can be specified as well.
 
 =item --delete-jobs <JOB_LIST> [--cfg PATH]
 
@@ -692,12 +694,12 @@ consider using --disable-jobs <JOB_LIST> as it is safer.
 
 =item --modify-job <JOB_NAME> <--parameter> <value> [--cfg PATH]
 
-Replaces current value of parameter of the specified job with new value
+Replace current value of parameter of the specified job with new value
 in the snaked configuration pointed to by PATH (defaults to /etc/snaked)
 
 =item --sample-config [PATH]
 
-Populate PATH or /etc/snaked with sample configuration (must not exist)
+Populate PATH or /etc/snaked (must not exist) with sample configuration
 
 =back
 
