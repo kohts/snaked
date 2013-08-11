@@ -369,7 +369,7 @@ __END__
 
 =head1 NAME
 
-snaked - cron as it should be.
+snaked - cron as it should be. Or shouldn't? L<Please vote!|http://www.kohts.com/cron-5/vote/>
 
 =head1 SYNOPSIS
 
